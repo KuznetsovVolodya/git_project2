@@ -1,5 +1,6 @@
 import pygame
 import os
+from random import choice
 
 # x2 = (mouse_pos[0] - self.left) // self.cell_size
 # y2 = (mouse_pos[1] - self.top) // self.cell_size
@@ -19,7 +20,7 @@ if __name__ == '__main__':
     fps = 60
 
 
-    def load_image(name, colorkey=None):
+    def load_image(name):
         fullname = os.path.join('data', name)
         image = pygame.image.load(fullname)
         image = image.convert_alpha()
@@ -34,7 +35,7 @@ if __name__ == '__main__':
         def __init__(self, width, height, cell_size, left, top):
             super().__init__(all_sprites)
             self.image = Wall.image
-            self.image = pygame.transform.scale(self.image, (width * cell_size + 5, height * cell_size + 5))
+            self.image = pygame.transform.scale(self.image, (width * cell_size + 15, height * cell_size + 15))
             self.rect = self.image.get_rect()
             self.rect.x = left - 5
             self.rect.y = top - 5
@@ -54,6 +55,8 @@ if __name__ == '__main__':
             self.rect.y = self.y_coord
             self.back_x = self.x_coord
             self.back_y = self.y_coord
+            self.orig_x = self.x_coord
+            self.orig_y = self.y_coord
             self.x_coord_to = self.x_coord
             self.y_coord_to = self.y_coord
             self.mask = pygame.mask.from_surface(self.image)
@@ -61,6 +64,7 @@ if __name__ == '__main__':
         def aim(self, x, y):
             self.x_coord_to = x
             self.y_coord_to = y
+            self.orig_x, self.orig_y = self.x_coord, self.y_coord
 
         def stop(self):
             if (self.x_coord_to, self.y_coord_to) == (self.x_coord, self.y_coord):
@@ -68,9 +72,83 @@ if __name__ == '__main__':
             else:
                 return False
 
+        def next(self):
+            if self.stop() and (self.orig_x, self.orig_y) != (self.x_coord, self.y_coord):
+                self.orig_x, self.orig_y = self.x_coord, self.y_coord
+                return 1
+            else:
+                return 0
+
         def update(self):
-            if pygame.sprite.collide_mask(self, wall) and not (
-                    120 <= self.x_coord <= 210 and 130 <= self.y_coord <= 150):
+            if pygame.sprite.collide_mask(self, wall) or self.y_coord < board.zero_coords()[1]:
+                self.x_coord_to = self.back_x
+                self.y_coord_to = self.back_y
+                self.back_x = self.x_coord
+                self.back_y = self.y_coord
+
+        def catched(self):
+            if pygame.sprite.collide_mask(self, evil):
+                return True
+            else:
+                return False
+
+        def movement(self):
+            if not self.stop():
+                if self.x_coord_to != self.x_coord:
+                    self.x_coord += ((self.x_coord_to - self.x_coord) / abs(self.x_coord_to - self.x_coord)) * v / fps
+                if self.y_coord_to != self.y_coord:
+                    self.y_coord += ((self.y_coord_to - self.y_coord) / abs(self.y_coord_to - self.y_coord)) * v / fps
+            else:
+                self.back_x = self.x_coord
+                self.back_y = self.y_coord
+            self.rect.x = self.x_coord
+            self.rect.y = self.y_coord
+
+        def get_coords(self):
+            return self.x_coord, self.y_coord
+
+    class Evil(pygame.sprite.Sprite):
+        image = load_image("min.png")
+
+        def __init__(self, x_coord, y_coord, size):
+            super().__init__(all_sprites_3)
+            self.x_coord, self.y_coord, self.size = x_coord, y_coord, size
+            self.image = Evil.image
+            self.image = pygame.transform.scale(self.image, (self.size, self.size))
+            self.rect = self.image.get_rect()
+            self.rect.x = self.x_coord
+            self.rect.y = self.y_coord
+            self.back_x = self.x_coord
+            self.back_y = self.y_coord
+            self.x_coord_to = self.x_coord
+            self.y_coord_to = self.y_coord
+            self.orig_x = self.x_coord
+            self.orig_y = self.y_coord
+            self.mask = pygame.mask.from_surface(self.image)
+
+        def aim(self, x, y):
+            self.x_coord_to = x
+            self.y_coord_to = y
+            self.orig_x, self.orig_y = self.x_coord, self.y_coord
+            self.back_x = self.x_coord
+            self.back_y = self.y_coord
+
+        def stop(self):
+            if (self.x_coord_to, self.y_coord_to) == (self.x_coord, self.y_coord):
+                return True
+            else:
+                return False
+
+        def next(self):
+            if self.stop() and (self.orig_x, self.orig_y) != (self.x_coord, self.y_coord):
+                self.orig_x, self.orig_y = self.x_coord, self.y_coord
+                return 0
+            else:
+                return 1
+
+        def update(self):
+            if pygame.sprite.collide_mask(self, wall) or self.y_coord > board.zero_coords()[2] * board.zero_coords()[4]\
+                    + board.zero_coords()[0]:
                 self.x_coord_to = self.back_x
                 self.y_coord_to = self.back_y
                 self.back_x = self.x_coord
@@ -90,6 +168,19 @@ if __name__ == '__main__':
 
         def get_coords(self):
             return self.x_coord, self.y_coord
+
+        def go(self):
+            direction = choice(("RIGHT", "LEFT", "UP", "DOWN"))
+            x_coord, y_coord = evil.get_coords()[0], evil.get_coords()[1]
+            x_coord2, y_coord2 = board.get_cell((x_coord, y_coord), direction)
+            evil.aim(x_coord2, y_coord2)
+
+        def catched(self):
+            if pygame.sprite.collide_mask(self, hero):
+                return True
+            else:
+                return False
+
 
 
     class Board:
@@ -132,22 +223,26 @@ if __name__ == '__main__':
 
     all_sprites = pygame.sprite.Group()
     all_sprites_2 = pygame.sprite.Group()
+    all_sprites_3 = pygame.sprite.Group()
     sprite = pygame.sprite.Sprite()
     board = Board()
     board.set_view(100, 100, 80)
     b = board.zero_coords()
     wall = Wall(b[3], b[4], b[2], b[0], b[1])
-    x_coord, y_coord, size = board.zero_coords()[0] + 30, board.zero_coords()[1] + 30, board.zero_coords()[2] - 60
+    x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
     hero = Hero(x_coord, y_coord, size)
+    x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
+    evil = Evil(x_coord_e, y_coord_e, size_e)
     running = True
     clock = pygame.time.Clock()
     direction = None
+    player = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if hero.stop():
+                if hero.stop() and player == 0:
                     if pygame.key.get_pressed()[pygame.K_RIGHT]:
                         direction = "RIGHT"
                     elif pygame.key.get_pressed()[pygame.K_LEFT]:
@@ -160,11 +255,25 @@ if __name__ == '__main__':
                     x_coord2, y_coord2 = board.get_cell((x_coord, y_coord), direction)
                     hero.aim(x_coord2, y_coord2)
         screen.fill("white")
-        hero.movement()
+        if player == 0:
+            hero.movement()
+            player = hero.next()
+            if player == 1:
+                evil.go()
+        else:
+            evil.movement()
+            player = evil.next()
+            if evil.next() == 1 and evil.stop():
+                evil.go()
         all_sprites.draw(screen)
         board.render(screen)
         all_sprites_2.draw(screen)
+        all_sprites_3.draw(screen)
         hero.update()
+        evil.update()
+        if hero.catched() or evil.catched():
+            running = False
         clock.tick(fps)
         pygame.display.flip()
+
 pygame.quit()
