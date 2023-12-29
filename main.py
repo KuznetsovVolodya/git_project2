@@ -47,10 +47,10 @@ if __name__ == '__main__':
         def __init__(self, width, height, cell_size, left, top):
             super().__init__(all_sprites_4)
             self.image = Floor.image
-            self.image = pygame.transform.scale(self.image, (cell_size, cell_size))
+            self.image = pygame.transform.scale(self.image, (width * cell_size, height * cell_size))
             self.rect = self.image.get_rect()
-            self.rect.x = left + width * cell_size
-            self.rect.y = top + height * cell_size
+            self.rect.x = left
+            self.rect.y = top
 
 
     class Wall_place():
@@ -193,14 +193,6 @@ if __name__ == '__main__':
             else:
                 return 1
 
-        # def update(self):
-        #     if pygame.sprite.collide_mask(self, wall) or self.y_coord > board.zero_coords()[2] * board.zero_coords()[4] \
-        #             + board.zero_coords()[0]:
-        #         self.x_coord_to = self.back_x
-        #         self.y_coord_to = self.back_y
-        #         self.back_x = self.x_coord
-        #         self.back_y = self.y_coord
-
         def movement(self):
             if not self.stop():
                 if self.x_coord_to != self.x_coord:
@@ -309,6 +301,7 @@ if __name__ == '__main__':
     board = Board()
     board.set_view(100, 100, 80)
     b = board.zero_coords()
+    Wall_place()
     x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
     hero = Hero(x_coord, y_coord, size)
     x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
@@ -335,7 +328,9 @@ if __name__ == '__main__':
                     x_coord, y_coord = hero.get_coords()[0], hero.get_coords()[1]
                     x_coord2, y_coord2 = board.get_cell((x_coord, y_coord), direction)
                     hero.aim(x_coord2, y_coord2)
-        screen.fill("black")
+        screen.fill((209, 188, 138))
+        # Floor(b[3], b[4], b[2], b[0], b[1])
+        # all_sprites_4.draw(screen)
         if player == 0:
             hero.movement()
             player = hero.next()
@@ -352,12 +347,7 @@ if __name__ == '__main__':
                 evil_move -= 1
                 evil.go()
 
-        for i in range(b[3]):
-            for j in range(b[4]):
-                Floor(i, j, b[2], b[0], b[1])
-        all_sprites_4.draw(screen)
         board.render(screen)
-        Wall_place()
         all_sprites.draw(screen)
         all_sprites_2.draw(screen)
         all_sprites_3.draw(screen)
@@ -369,3 +359,4 @@ if __name__ == '__main__':
         pygame.display.flip()
 
 pygame.quit()
+
