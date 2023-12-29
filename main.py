@@ -24,19 +24,50 @@ if __name__ == '__main__':
 
 
     class Wall(pygame.sprite.Sprite):
-        image = load_image("lab4.png")
+        image = load_image("wall.png")
 
-        def __init__(self, width, height, cell_size, left, top):
+        def __init__(self, width, height, cell_size, left, top, size_x, size_y):
             super().__init__(all_sprites)
             self.image = Wall.image
-            self.image = pygame.transform.scale(self.image, (width * cell_size, height * cell_size))
+            self.image = pygame.transform.scale(self.image, (size_x, size_y))
             self.rect = self.image.get_rect()
-            self.rect.x = left
-            self.rect.y = top
+            self.rect.x = left + width * cell_size - 1
+            self.rect.y = top + height * cell_size - 1
             self.mask = pygame.mask.from_surface(self.image)
 
-        def is_wall(self, coords):
-            return self.rect.collidepoint(coords)
+        def update(self, coords):
+            if self.rect.collidepoint(coords):
+                return True
+            else:
+                return False
+
+
+    class Wall_place():
+        def __init__(self):
+            self.x_place = self.load_level_x("walls_x")
+            for i in range(len(self.x_place)):
+                for j in range(len(self.x_place[i])):
+                    if self.x_place[i][j] == "#":
+                        a = board.zero_coords()
+                        Wall(j, i, a[2], a[0], a[1], 5, a[2] + 2)
+            self.y_place = self.load_level_y("walls_y")
+            for i1 in range(len(self.y_place)):
+                for j1 in range(len(self.y_place[i1])):
+                    if self.y_place[i1][j1] == "#":
+                        a1 = board.zero_coords()
+                        Wall(j1, i1, a1[2], a1[0], a1[1], a1[2] + 2, 5)
+
+        def load_level_y(self, filename):
+            filename = "data/" + filename
+            with open(filename, 'r') as mapFile:
+                level_map = [line.strip() for line in mapFile]
+            return list(map(lambda x: x.ljust(10, '.'), level_map))
+
+        def load_level_x(self, filename):
+            filename = "data/" + filename
+            with open(filename, 'r') as mapFile:
+                level_map = [line.strip() for line in mapFile]
+            return list(map(lambda x: x.ljust(11, '#'), level_map))
 
 
     class Hero(pygame.sprite.Sprite):
@@ -77,11 +108,12 @@ if __name__ == '__main__':
                 return 0
 
         def update(self):
-            if pygame.sprite.collide_mask(self, wall) or self.y_coord < board.zero_coords()[1]:
-                self.x_coord_to = self.back_x
-                self.y_coord_to = self.back_y
-                self.back_x = self.x_coord
-                self.back_y = self.y_coord
+            for elem in all_sprites:
+                if pygame.sprite.collide_mask(self, elem) or self.y_coord < board.zero_coords()[1]:
+                    self.x_coord_to = self.back_x
+                    self.y_coord_to = self.back_y
+                    self.back_x = self.x_coord
+                    self.back_y = self.y_coord
 
         def catched(self):
             if pygame.sprite.collide_mask(self, evil):
@@ -107,8 +139,7 @@ if __name__ == '__main__':
         def win(self):
             if self.y_coord > board.zero_coords()[2] * board.zero_coords()[4] + board.zero_coords()[0]:
                 return True
-            else:
-                return False
+            return False
 
 
     class Evil(pygame.sprite.Sprite):
@@ -129,6 +160,7 @@ if __name__ == '__main__':
             self.orig_x = self.x_coord
             self.orig_y = self.y_coord
             self.mask = pygame.mask.from_surface(self.image)
+            self.prev = None
 
         def aim(self, x, y):
             self.x_coord_to = x
@@ -150,13 +182,13 @@ if __name__ == '__main__':
             else:
                 return 1
 
-        def update(self):
-            if pygame.sprite.collide_mask(self, wall) or self.y_coord > board.zero_coords()[2] * board.zero_coords()[4] \
-                    + board.zero_coords()[0]:
-                self.x_coord_to = self.back_x
-                self.y_coord_to = self.back_y
-                self.back_x = self.x_coord
-                self.back_y = self.y_coord
+        # def update(self):
+        #     if pygame.sprite.collide_mask(self, wall) or self.y_coord > board.zero_coords()[2] * board.zero_coords()[4] \
+        #             + board.zero_coords()[0]:
+        #         self.x_coord_to = self.back_x
+        #         self.y_coord_to = self.back_y
+        #         self.back_x = self.x_coord
+        #         self.back_y = self.y_coord
 
         def movement(self):
             if not self.stop():
@@ -174,17 +206,41 @@ if __name__ == '__main__':
             return self.x_coord, self.y_coord
 
         def go(self):
-            vari = ["LEFT", "UP", "RIGHT", "DOWN"]
+            vari = []
             move = board.zero_coords()[2]
-            # if not wall.is_wall((self.x_coord - 21, self.y_coord)):
-            #     vari.append("LEFT")
-            # elif not wall.is_wall((self.x_coord + move - 21, self.y_coord)):
-            #     vari.append("RIGHT")
-            # elif not wall.is_wall((self.x_coord, self.y_coord + move - 16)):
-            #     vari.append("DOWN")
-            # elif not wall.is_wall((self.x_coord, self.y_coord - 16)):
-            #     vari.append("UP")
+            left = True
+            right = True
+            up = True
+            down = True
+            for elem in all_sprites:
+                if elem.update((self.x_coord - 20, self.y_coord)):
+                    left = False
+                if elem.update((self.x_coord + move - 20, self.y_coord)):
+                    right = False
+                if elem.update((self.x_coord, self.y_coord + move - 15)) or self.y_coord + move - 15 >= \
+                        board.zero_coords()[2] * board.zero_coords()[4] + board.zero_coords()[1]:
+                    down = False
+                if elem.update((self.x_coord, self.y_coord - 15)):
+                    up = False
+            if left:
+                vari.append("LEFT")
+            if right:
+                vari.append("RIGHT")
+            if down:
+                vari.append("DOWN")
+            if up:
+                vari.append("UP")
+            if self.prev is not None and len(vari) > 1:
+                if self.prev == "LEFT":
+                    vari.pop(vari.index("RIGHT"))
+                elif self.prev == "RIGHT":
+                    vari.pop(vari.index("LEFT"))
+                elif self.prev == "UP":
+                    vari.pop(vari.index("DOWN"))
+                elif self.prev == "DOWN":
+                    vari.pop(vari.index("UP"))
             direction = choice(vari)
+            self.prev = direction
             x_coord, y_coord = evil.get_coords()[0], evil.get_coords()[1]
             x_coord2, y_coord2 = board.get_cell((x_coord, y_coord), direction)
             evil.aim(x_coord2, y_coord2)
@@ -219,7 +275,7 @@ if __name__ == '__main__':
                 for j in range(self.height):
                     x1 = self.left + self.cell_size * i
                     y1 = self.top + self.cell_size * j
-                    pygame.draw.rect(screen, "black", ((x1, y1), (self.cell_size, self.cell_size)), 1)
+                    pygame.draw.rect(screen, "grey", ((x1, y1), (self.cell_size, self.cell_size)), 2)
 
         def get_cell(self, mouse_pos, pressed_button):
             x_c, y_c = mouse_pos[0], mouse_pos[1]
@@ -241,7 +297,7 @@ if __name__ == '__main__':
     board = Board()
     board.set_view(100, 100, 80)
     b = board.zero_coords()
-    wall = Wall(b[3], b[4], b[2], b[0], b[1])
+    Wall_place()
     x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
     hero = Hero(x_coord, y_coord, size)
     x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
@@ -285,8 +341,8 @@ if __name__ == '__main__':
                 evil_move -= 1
                 evil.go()
 
-        all_sprites.draw(screen)
         board.render(screen)
+        all_sprites.draw(screen)
         all_sprites_2.draw(screen)
         all_sprites_3.draw(screen)
         hero.update()
