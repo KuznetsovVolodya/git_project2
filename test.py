@@ -38,6 +38,18 @@ if __name__ == '__main__':
         def update(self, coords):
             return self.rect.collidepoint(coords)
 
+    class Floor(pygame.sprite.Sprite):
+        image = load_image("floor.png")
+
+        def __init__(self, width, height, cell_size, left, top):
+            super().__init__(all_sprites)
+            self.image = Wall.image
+            self.image = pygame.transform.scale(self.image, (cell_size, cell_size))
+            self.rect = self.image.get_rect()
+            self.rect.x = left + width * cell_size + 3 * (width + 1)
+            self.rect.y = top + height * cell_size + 3 * (height + 1)
+
+
 
     class Wall_place():
         def __init__(self):
