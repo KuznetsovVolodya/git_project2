@@ -48,13 +48,12 @@ if __name__ == '__main__':
         def update(self, pos):
             if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
                     self.rect.y <= pos[1] <= self.rect.y + self.size_y:
-                print(True)
                 return True
             return False
 
 
     class Phone_image(pygame.sprite.Sprite):
-        image = load_image("min_phone.png")
+        image = load_image("min_win.png")
 
         def __init__(self, left, top, size_x, size_y):
             super().__init__(all_sprites_0)
@@ -66,19 +65,16 @@ if __name__ == '__main__':
 
 
     def start_screen():
-        intro_text = ["'become a legend' представляет", "",
-                      "      ЛАБИРИНТ МИНОТАВРА", "",
-                      "         Компьютерная игра",
-                      "по мотивам знаменитого мифа"]
+        intro_text = ["", "      МИНОТАВР ПОБЕДИЛ", ""]
 
-        fon = pygame.transform.scale(load_image('phone.png'), (WIDTH, HEIGHT))
+        fon = pygame.transform.scale(load_image('phone_lose.png'), (WIDTH, HEIGHT))
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 50)
         text_coord = 50
-        min_im = Phone_image(100, 400, 800, 500)
+        min_im = Phone_image(100, 200, 800, 700)
         min_im = Play(850, 950, 150, 50)
         for line in intro_text:
-            string_rendered = font.render(line, 1, pygame.Color('orange'))
+            string_rendered = font.render(line, 1, pygame.Color('grey'))
             intro_rect = string_rendered.get_rect()
             text_coord += 10
             intro_rect.top = text_coord
