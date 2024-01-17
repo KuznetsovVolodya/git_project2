@@ -1,14 +1,15 @@
 import pygame
 import os
 from random import choice
+from random import shuffle
 import sys
-from PyQt5.QtWidgets import QWidget, QApplication, QPushButton
-from PyQt5.QtWidgets import QInputDialog
+# from PyQt5.QtWidgets import QWidget, QApplication, QPushButton
+# from PyQt5.QtWidgets import QInputDialog
 
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Лабиринт')
-    size = width, height = 1000, 1000
+    size = width, height = (1000, 1000)
     screen = pygame.display.set_mode(size)
     v = 240
     fps = 60
@@ -294,6 +295,39 @@ if __name__ == '__main__':
                     level_map = [line.strip() for line in mapFile]
                 return list(map(lambda x: x.ljust(11, '#'), level_map))
 
+        class Quest(pygame.sprite.Sprite):
+            image = load_image("quest.png")
+
+            def __init__(self, width, height, cell_size, left, top, size_x, size_y):
+                super().__init__(all_sprites)
+                self.image = Quest.image
+                self.image = pygame.transform.scale(self.image, (size_x, size_y))
+                self.rect = self.image.get_rect()
+                self.rect.x = left + width * cell_size
+                self.rect.y = top + height * cell_size
+                self.mask = pygame.mask.from_surface(self.image)
+
+        class Quest_place():
+            def __init__(self):
+                b = []
+                for k in range(1, 100):
+                     b.append(k)
+                shuffle(b)
+                b = b[:50]
+
+                for i in range(50):
+                    a = board.zero_coords()
+                    j1 = b[i] // 10
+                    i1 = b[i] % 10
+                    Quest(j1, i1, a[2], a[0], a[1], a[2], a[2])
+
+            # def update(self, coords):
+            #     if self.rect.collidepoint(coords):
+            #         return True
+            #     else:
+            #         return False
+        #
+
 
         class Hero(pygame.sprite.Sprite):
             image = load_image("hero.png")
@@ -515,6 +549,7 @@ if __name__ == '__main__':
         board.set_view(100, 100, 80)
         b = board.zero_coords()
         Wall_place()
+        Quest_place()
         x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
         hero = Hero(x_coord, y_coord, size)
         x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
