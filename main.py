@@ -3,6 +3,7 @@ import os
 from random import choice
 from random import shuffle
 import sys
+
 # from PyQt5.QtWidgets import QWidget, QApplication, QPushButton
 # from PyQt5.QtWidgets import QInputDialog
 
@@ -22,16 +23,17 @@ if __name__ == '__main__':
         colorkey = -1
         image.set_colorkey(colorkey)
         return image
+
+
     def terminate():
         pygame.quit()
         sys.exit()
+
 
     def hello():
         all_sprites_0 = pygame.sprite.Group()
         all_sprites_0_1 = pygame.sprite.Group()
         sprite = pygame.sprite.Sprite()
-
-
 
         class Play(pygame.sprite.Sprite):
             image = load_image("play.png")
@@ -64,9 +66,9 @@ if __name__ == '__main__':
                 self.rect.y = top
 
         intro_text = ["'become a legend' представляет", "",
-                          "      ЛАБИРИНТ МИНОТАВРА", "",
-                          "         Компьютерная игра",
-                          "по мотивам знаменитого мифа"]
+                      "      ЛАБИРИНТ МИНОТАВРА", "",
+                      "         Компьютерная игра",
+                      "по мотивам знаменитого мифа"]
 
         fon = pygame.transform.scale(load_image('phone.png'), (width, height))
         screen.blit(fon, (0, 0))
@@ -96,6 +98,7 @@ if __name__ == '__main__':
                 all_sprites_0_1.draw(screen)
             pygame.display.flip()
             # clock.tick(FPS)
+
 
     def min_win():
         all_sprites_0 = pygame.sprite.Group()
@@ -235,8 +238,6 @@ if __name__ == '__main__':
             pygame.display.flip()
 
 
-
-
     def first_game():
         class Wall(pygame.sprite.Sprite):
             image = load_image("wall.png")
@@ -267,7 +268,6 @@ if __name__ == '__main__':
                 self.rect.x = left
                 self.rect.y = top
 
-
         class Wall_place():
             def __init__(self):
                 self.x_place = self.load_level_x("walls_x")
@@ -297,37 +297,52 @@ if __name__ == '__main__':
 
         class Quest(pygame.sprite.Sprite):
             image = load_image("quest.png")
+            image2 = load_image("quest_ans.png")
 
             def __init__(self, width, height, cell_size, left, top, size_x, size_y):
-                super().__init__(all_sprites)
-                self.image = Quest.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
+                super().__init__(all_sprites_5)
+                self.b = top + height * cell_size
+                self.a = left + width * cell_size
+                if f'{self.a}{self.b}' not in ans:
+                    ans[f'{self.a}{self.b}'] = None
+                if ans[f'{self.a}{self.b}'] is None:
+                    self.image = Quest.image
+                else:
+                    self.image = Quest.image2
+                self.x = size_x
+                self.y = size_y
+                self.image = pygame.transform.scale(self.image, (self.x, self.y))
                 self.rect = self.image.get_rect()
-                self.rect.x = left + width * cell_size
-                self.rect.y = top + height * cell_size
+                self.rect.x = self.a
+                self.rect.y = self.b
                 self.mask = pygame.mask.from_surface(self.image)
+
+            def update(self, coords):
+                if self.rect.collidepoint(coords):
+                    ans[f'{self.a}{self.b}'] = True
+                    self.image = Quest.image2
+                    self.image = pygame.transform.scale(self.image, (self.x, self.y))
+                    self.rect = self.image.get_rect()
+                    self.rect.x = self.a
+                    self.rect.y = self.b
+                    self.mask = pygame.mask.from_surface(self.image)
+
 
         class Quest_place():
             def __init__(self):
                 b = []
                 for k in range(1, 100):
-                     b.append(k)
+                    b.append(k)
                 shuffle(b)
                 b = b[:50]
-
                 for i in range(50):
                     a = board.zero_coords()
                     j1 = b[i] // 10
                     i1 = b[i] % 10
                     Quest(j1, i1, a[2], a[0], a[1], a[2], a[2])
 
-            # def update(self, coords):
-            #     if self.rect.collidepoint(coords):
-            #         return True
-            #     else:
-            #         return False
-        #
 
+        #
 
         class Hero(pygame.sprite.Sprite):
             image = load_image("hero.png")
@@ -374,6 +389,10 @@ if __name__ == '__main__':
                         self.back_x = self.x_coord
                         self.back_y = self.y_coord
 
+            def update_quest(self):
+                for elem in all_sprites_5:
+                    elem.update((self.x_coord, self.y_coord))
+
             def catched(self):
                 if pygame.sprite.collide_mask(self, evil):
                     return True
@@ -383,9 +402,11 @@ if __name__ == '__main__':
             def movement(self):
                 if not self.stop():
                     if self.x_coord_to != self.x_coord:
-                        self.x_coord += ((self.x_coord_to - self.x_coord) / abs(self.x_coord_to - self.x_coord)) * v / fps
+                        self.x_coord += ((self.x_coord_to - self.x_coord) / abs(
+                            self.x_coord_to - self.x_coord)) * v / fps
                     if self.y_coord_to != self.y_coord:
-                        self.y_coord += ((self.y_coord_to - self.y_coord) / abs(self.y_coord_to - self.y_coord)) * v / fps
+                        self.y_coord += ((self.y_coord_to - self.y_coord) / abs(
+                            self.y_coord_to - self.y_coord)) * v / fps
                 else:
                     self.back_x = self.x_coord
                     self.back_y = self.y_coord
@@ -399,7 +420,6 @@ if __name__ == '__main__':
                 if self.y_coord > board.zero_coords()[2] * board.zero_coords()[4] + board.zero_coords()[0]:
                     return True
                 return False
-
 
         class Evil(pygame.sprite.Sprite):
             image = load_image("min.png")
@@ -444,9 +464,11 @@ if __name__ == '__main__':
             def movement(self):
                 if not self.stop():
                     if self.x_coord_to != self.x_coord:
-                        self.x_coord += ((self.x_coord_to - self.x_coord) / abs(self.x_coord_to - self.x_coord)) * v / fps
+                        self.x_coord += ((self.x_coord_to - self.x_coord) / abs(
+                            self.x_coord_to - self.x_coord)) * v / fps
                     if self.y_coord_to != self.y_coord:
-                        self.y_coord += ((self.y_coord_to - self.y_coord) / abs(self.y_coord_to - self.y_coord)) * v / fps
+                        self.y_coord += ((self.y_coord_to - self.y_coord) / abs(
+                            self.y_coord_to - self.y_coord)) * v / fps
                 else:
                     self.back_x = self.x_coord
                     self.back_y = self.y_coord
@@ -502,7 +524,6 @@ if __name__ == '__main__':
                 else:
                     return False
 
-
         class Board:
             def __init__(self):
                 self.width = 10
@@ -544,11 +565,13 @@ if __name__ == '__main__':
         all_sprites_2 = pygame.sprite.Group()
         all_sprites_3 = pygame.sprite.Group()
         all_sprites_4 = pygame.sprite.Group()
+        all_sprites_5 = pygame.sprite.Group()
         sprite = pygame.sprite.Sprite()
         board = Board()
         board.set_view(100, 100, 80)
         b = board.zero_coords()
         Wall_place()
+        ans = {}
         Quest_place()
         x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
         hero = Hero(x_coord, y_coord, size)
@@ -598,9 +621,11 @@ if __name__ == '__main__':
 
             board.render(screen)
             all_sprites.draw(screen)
+            all_sprites_5.draw(screen)
             all_sprites_2.draw(screen)
             all_sprites_3.draw(screen)
             hero.update()
+            hero.update_quest()
             evil.update()
             if hero.catched() or evil.catched():
                 min_win()
@@ -609,6 +634,7 @@ if __name__ == '__main__':
             clock.tick(fps)
             pygame.display.flip()
         terminate()
+
+
     hello()
 pygame.quit()
-
