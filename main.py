@@ -349,8 +349,8 @@ if __name__ == '__main__':
             image2 = load_image("quest_ans.png")
 
             def __init__(self, width, height, cell_size, left, top, size_x, size_y):
-                global numm
-                numm = 0
+                global count_quests
+                count_quests = 0
                 super().__init__(all_sprites_5)
                 self.b = top + height * cell_size
                 self.a = left + width * cell_size
@@ -372,12 +372,12 @@ if __name__ == '__main__':
 
             def update(self, coords):
                 if self.rect.collidepoint(coords) and self.xd == 0 and not(ans[f'{self.a}{self.b}']):
-                    global numm
+                    global count_quests
                     app = QApplication(sys.argv)
                     ex = Questt()
                     ex.show()
                     app.exec()
-                    numm += ex.corr
+                    count_quests += ex.corr
                     ans[f'{self.a}{self.b}'] = True
                     self.image = Quest.image2
                     self.image = pygame.transform.scale(self.image, (self.x, self.y))
@@ -656,8 +656,8 @@ if __name__ == '__main__':
                         hero.aim(x_coord2, y_coord2)
             fon = pygame.transform.scale(load_image('floor.png'), (width, height))
             screen.blit(fon, (0, 0))
-            global numm
-            intro_text = [f"{numm}                            40"]
+            global count_quests
+            intro_text = [f"{count_quests}                            40"]
             screen.blit(fon, (0, 0))
             font = pygame.font.Font(None, 120)
             text_coord = 10
