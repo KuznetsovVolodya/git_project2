@@ -1,11 +1,11 @@
 import pygame
 import os
-from random import choice
-from random import shuffle
+from random import choice, shuffle, randint
 import sys
-
-# from PyQt5.QtWidgets import QWidget, QApplication, QPushButton
-# from PyQt5.QtWidgets import QInputDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+from PyQt5.QtWidgets import QLineEdit, QDesktopWidget, QLabel, QLayout
+from PyQt5 import QtGui
+import sqlite3
 
 if __name__ == '__main__':
     pygame.init()
@@ -268,7 +268,7 @@ if __name__ == '__main__':
                 self.rect.x = left
                 self.rect.y = top
 
-        class Wall_place():
+        class Wall_place:
             def __init__(self):
                 self.x_place = self.load_level_x("walls_x")
                 for i in range(len(self.x_place)):
@@ -295,11 +295,62 @@ if __name__ == '__main__':
                     level_map = [line.strip() for line in mapFile]
                 return list(map(lambda x: x.ljust(11, '#'), level_map))
 
+        class Questt(QWidget):
+            def __init__(self, db='questions.db'):
+                super().__init__()
+                self.db = db
+                self.num = randint(1, 50)
+                con = sqlite3.connect('questions.db')
+                cur = con.cursor()
+                self.res = cur.execute(
+                    f'''SELECT question, a, b, c, ans FROM questions WHERE id == {self.num}''').fetchall()
+                self.corr = 0
+                con.close()
+                self.initUI()
+
+            def initUI(self):
+                self.setGeometry(0, 0, 800, 450)
+                qr = self.frameGeometry()
+                qr.moveCenter(QDesktopWidget().availableGeometry().center())
+                self.move(qr.topLeft())
+                self.setWindowTitle('Question')
+                self.a = QPushButton(f'a) {self.res[0][1]}', self)
+                self.a.move(50, 300)
+                self.a.resize(200, 50)
+                self.a.clicked.connect(lambda: self.hello(ans='a'))
+                self.b = QPushButton(f'b) {self.res[0][2]}', self)
+                self.b.move(300, 300)
+                self.b.resize(200, 50)
+                self.b.clicked.connect(lambda: self.hello(ans='b'))
+                self.c = QPushButton(f'c) {self.res[0][3]}', self)
+                self.c.move(550, 300)
+                self.c.resize(200, 50)
+                self.c.clicked.connect(lambda: self.hello(ans='c'))
+                self.label = QLabel(self)
+                self.label.setText(self.res[0][0])
+                self.label.move(20, 60)
+                self.label.setFont(QtGui.QFont("Times", 10, QtGui.QFont.Bold))
+
+            def hello(self, ans):
+                if self.iscorrect(ans):
+                    self.corr = 1
+                else:
+                    self.corr = 0
+                self.close()
+
+            def iscorrect(self, n=''):
+                if n != self.res[0][4]:
+                    return False
+                else:
+                    return True
+
         class Quest(pygame.sprite.Sprite):
             image = load_image("quest.png")
             image2 = load_image("quest_ans.png")
 
             def __init__(self, width, height, cell_size, left, top, size_x, size_y):
+                global numm
+                numm = 0
                 super().__init__(all_sprites_5)
                 self.b = top + height * cell_size
                 self.a = left + width * cell_size
@@ -316,9 +367,17 @@ if __name__ == '__main__':
                 self.rect.x = self.a
                 self.rect.y = self.b
                 self.mask = pygame.mask.from_surface(self.image)
+                self.setup = -1
+                self.xd = 0
 
             def update(self, coords):
-                if self.rect.collidepoint(coords):
+                if self.rect.collidepoint(coords) and self.xd == 0 and not(ans[f'{self.a}{self.b}']):
+                    global numm
+                    app = QApplication(sys.argv)
+                    ex = Questt()
+                    ex.show()
+                    app.exec()
+                    numm += ex.corr
                     ans[f'{self.a}{self.b}'] = True
                     self.image = Quest.image2
                     self.image = pygame.transform.scale(self.image, (self.x, self.y))
@@ -326,7 +385,6 @@ if __name__ == '__main__':
                     self.rect.x = self.a
                     self.rect.y = self.b
                     self.mask = pygame.mask.from_surface(self.image)
-
 
         class Quest_place():
             def __init__(self):
@@ -340,9 +398,6 @@ if __name__ == '__main__':
                     j1 = b[i] // 10
                     i1 = b[i] % 10
                     Quest(j1, i1, a[2], a[0], a[1], a[2], a[2])
-
-
-        #
 
         class Hero(pygame.sprite.Sprite):
             image = load_image("hero.png")
@@ -572,7 +627,7 @@ if __name__ == '__main__':
         b = board.zero_coords()
         Wall_place()
         ans = {}
-        Quest_place()
+        q = Quest_place()
         x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
         hero = Hero(x_coord, y_coord, size)
         x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
@@ -601,8 +656,19 @@ if __name__ == '__main__':
                         hero.aim(x_coord2, y_coord2)
             fon = pygame.transform.scale(load_image('floor.png'), (width, height))
             screen.blit(fon, (0, 0))
-            # Floor(b[3], b[4], b[2], b[0], b[1])
-            # all_sprites_4.draw(screen)
+            global numm
+            intro_text = [f"{numm}                            40"]
+            screen.blit(fon, (0, 0))
+            font = pygame.font.Font(None, 120)
+            text_coord = 10
+            for line in intro_text:
+                string_rendered = font.render(line, 1, pygame.Color('red'))
+                intro_rect = string_rendered.get_rect()
+                text_coord += 10
+                intro_rect.top = text_coord
+                intro_rect.x = 120
+                text_coord += intro_rect.height
+                screen.blit(string_rendered, intro_rect)
             if player == 0:
                 hero.movement()
                 player = hero.next()

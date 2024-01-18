@@ -1,4 +1,5 @@
 import sys
+from random import randint
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 from PyQt5.QtWidgets import QLineEdit, QDesktopWidget, QLabel, QLayout
 from PyQt5 import QtGui
@@ -6,13 +7,14 @@ import sqlite3
 
 
 class Quest(QWidget):
-    def __init__(self, db='questions.db', num=45):
+    def __init__(self, db='questions.db'):
         super().__init__()
         self.db = db
-        self.num = num
+        self.num = 26
         con = sqlite3.connect('questions.db')
         cur = con.cursor()
         self.res = cur.execute(f'''SELECT question, a, b, c, ans FROM questions WHERE id == {self.num}''').fetchall()
+        self.corr = None
         con.close()
         self.initUI()
 
@@ -40,7 +42,15 @@ class Quest(QWidget):
         self.label.setFont(QtGui.QFont("Times", 10, QtGui.QFont.Bold))
 
     def hello(self, ans):
+        if self.res[0][4] == 'а':
+            print('пе')
+        if self.iscorrect(ans):
+            self.corr = True
+        else:
+            self.corr = False
         print(self.iscorrect(ans))
+        print(self.res)
+
 
     def iscorrect(self, n=''):
         if n != self.res[0][4]:
@@ -49,8 +59,7 @@ class Quest(QWidget):
             return True
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = Quest()
-    ex.show()
-    sys.exit(app.exec())
+app = QApplication(sys.argv)
+ex = Quest()
+ex.show()
+sys.exit(app.exec())
