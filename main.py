@@ -36,7 +36,6 @@ if __name__ == '__main__':
         all_sprites_1_1 = pygame.sprite.Group()
         sprite = pygame.sprite.Sprite()
 
-
         class Play(pygame.sprite.Sprite):
             image = load_image("play.png")
 
@@ -56,31 +55,31 @@ if __name__ == '__main__':
                     return True
                 return False
 
-
         intro_text = ["                                       ПРАВИЛА", "",
-                          " Перед вами игра 'ЛАБИРИНТ МИНОТАВРА. Ваша цель - ", "",
-                          " пройти через лабиринт к выходу, не столкнувшись", "",
-                          " с минотавром. Однако это не всё - вам нужно ", "",
-                          " ответить верно не меньше чем на 40 вопросов", "",
-                          " из 50, которые разбросаны по всему полю, чтобы", "",
-                          " пройти на следующий уровень.Так что вам придётся", "",
-                          " изрядно побродить по лабиринту и не раз облиться", "",
-                          " холодным потом, чувствуя, что минотавр уже близко!", "",
-                          " Для удобства наверху находятся подсказки", "",
-                          " (слева направо): кол-во правильных ответов, кол-во", "",
-                          " неправильных, кол-во необходимых правильных ответов, ", "",
-                          " чтобы пройти на следующий уровень. Передвижение ", "",
-                          " осуществляется нажатием на клавиши управления", "",
-                          " курсором. !ВНИМАНИЕ! Не удерживайте клавишу,  ", "",
-                          " нажимайте один раз, если не хотите сломать игру", "",
-                          " и испортить себе удовольствие.", "",
-                          "                          УДАЧНЫХ ПОДВИГОВ!"]
+                      " Перед вами игра 'ЛАБИРИНТ МИНОТАВРА. Ваша цель - ", "",
+                      " пройти через лабиринт к выходу, не столкнувшись", "",
+                      " с минотавром. Однако это не всё - вам нужно ", "",
+                      " ответить верно не меньше чем на x вопросов", "",
+                      " из 50(с каждым уровнем порог увеличивается на 10),"
+                      " которые разбросаны по всему полю, чтобы", "",
+                      " пройти на следующий уровень.Так что вам придётся", "",
+                      " изрядно побродить по лабиринту и не раз облиться", "",
+                      " холодным потом, чувствуя, что минотавр уже близко!", "",
+                      " Для удобства наверху находятся подсказки", "",
+                      " (слева направо): кол-во правильных ответов, кол-во", "",
+                      " неправильных, кол-во необходимых правильных ответов, ", "",
+                      " чтобы пройти на следующий уровень. Передвижение ", "",
+                      " осуществляется нажатием на клавиши управления", "",
+                      " курсором. !ВНИМАНИЕ! Не удерживайте клавишу,  ", "",
+                      " нажимайте один раз, если не хотите сломать игру", "",
+                      " и испортить себе удовольствие.", "",
+                      "                          УДАЧНЫХ ПОДВИГОВ!"]
 
         fon = pygame.transform.scale(load_image('rules.png'), (width, height))
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 30)
         text_coord = 130
-        min_im = Play(850, 950, 150, 50)
+        min_im = Play(700, 900, 300, 100)
         for line in intro_text:
             string_rendered = font.render(line, 5, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
@@ -102,7 +101,6 @@ if __name__ == '__main__':
             all_sprites_1_1.draw(screen)
             pygame.display.flip()
             # clock.tick(FPS)
-
 
 
     def hello():
@@ -151,7 +149,7 @@ if __name__ == '__main__':
         font = pygame.font.Font(None, 50)
         text_coord = 50
         min_im = Phone_image(100, 400, 800, 500)
-        min_im = Play(850, 950, 150, 50)
+        min_im = Play(700, 900, 300, 100)
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('orange'))
             intro_rect = string_rendered.get_rect()
@@ -212,23 +210,21 @@ if __name__ == '__main__':
                 self.rect.x = left
                 self.rect.y = top
 
-
-
-        intro_text = ["", "        МИНОТАВР ПОБЕДИЛ", ""]
+        intro_text = ["", "                                  МИНОТАВР ПОБЕДИЛ", "",
+                      "        Готовы взять реванш? Тогда пройдите этот уровень ещё раз!"]
 
         fon = pygame.transform.scale(load_image('phone_lose.png'), (width, height))
         screen.blit(fon, (0, 0))
-        font = pygame.font.Font(None, 50)
+        font = pygame.font.Font(None, 35)
         text_coord = 50
         min_im = Phone_image(100, 200, 800, 700)
-        min_im = Play(850, 950, 150, 50)
+        min_im = Play(700, 900, 300, 100)
         clock = pygame.time.Clock()
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('grey'))
             intro_rect = string_rendered.get_rect()
-            text_coord += 10
             intro_rect.top = text_coord
-            intro_rect.x = 240
+            intro_rect.x = 10
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
 
@@ -283,21 +279,21 @@ if __name__ == '__main__':
                 self.rect.x = left
                 self.rect.y = top
 
-        intro_text = ["", "        ВЫ ПОБЕДИЛИ", ""]
+        intro_text = ["                                              ВЫ ПОБЕДИЛИ", "",
+                      "        Готовы поднять ставки? Тогда пройдите следующий уровень!"]
 
         fon = pygame.transform.scale(load_image('phone_win.png'), (width, height))
         screen.blit(fon, (0, 0))
-        font = pygame.font.Font(None, 50)
+        font = pygame.font.Font(None, 35)
         text_coord = 50
         min_im = Phone_image(100, 200, 800, 700)
-        min_im = Play(850, 950, 150, 50)
+        min_im = Play(700, 900, 300, 100)
         clock = pygame.time.Clock()
         for line in intro_text:
-            string_rendered = font.render(line, 1, pygame.Color('grey'))
+            string_rendered = font.render(line, 1, pygame.Color('green'))
             intro_rect = string_rendered.get_rect()
-            text_coord += 10
             intro_rect.top = text_coord
-            intro_rect.x = 240
+            intro_rect.x = 10
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
 
@@ -314,6 +310,76 @@ if __name__ == '__main__':
             all_sprites_0_1.draw(screen)
             clock.tick(FPS)
             pygame.display.flip()
+
+    def no_win():
+        all_sprites_0 = pygame.sprite.Group()
+        all_sprites_0_1 = pygame.sprite.Group()
+        sprite = pygame.sprite.Sprite()
+        FPS = 5
+
+        class Play(pygame.sprite.Sprite):
+            image = load_image("play.png")
+
+            def __init__(self, left, top, size_x, size_y):
+                super().__init__(all_sprites_0_1)
+                self.image = Play.image
+                self.image = pygame.transform.scale(self.image, (size_x, size_y))
+                self.rect = self.image.get_rect()
+                self.size_x = size_x
+                self.size_y = size_y
+                self.rect.x = left
+                self.rect.y = top
+
+            def update(self, pos):
+                if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
+                        self.rect.y <= pos[1] <= self.rect.y + self.size_y:
+                    return True
+                return False
+
+        class Phone_image(pygame.sprite.Sprite):
+            image = load_image("less_win.png")
+
+            def __init__(self, left, top, size_x, size_y):
+                super().__init__(all_sprites_0)
+                self.image = Phone_image.image
+                self.image = pygame.transform.scale(self.image, (size_x, size_y))
+                self.rect = self.image.get_rect()
+                self.rect.x = left
+                self.rect.y = top
+
+        intro_text = ["        БАЛЛОВ НЕДОСТАТОЧНО, ЧТОБЫ ПРОЙТИ НА СЛЕДУЮЩИЙ УРОВЕНЬ", "",
+                      "                                  Увы, победа далась слишком дорогой ценой. ",
+                      "                                    Но вы можете испытать удачу ещё раз!"]
+
+        fon = pygame.transform.scale(load_image('less_win_phone.png'), (width, height))
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font(None, 35)
+        text_coord = 50
+        min_im = Phone_image(100, 200, 800, 700)
+        min_im = Play(700, 900, 300, 100)
+        clock = pygame.time.Clock()
+        for line in intro_text:
+            string_rendered = font.render(line, 1, pygame.Color('black'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 10
+            intro_rect.top = text_coord
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for elem in all_sprites_0_1:
+                        if elem.update(event.pos):
+                            first_game()
+
+            all_sprites_0.draw(screen)
+            all_sprites_0_1.draw(screen)
+            clock.tick(FPS)
+            pygame.display.flip()
+
 
 
     def first_game():
@@ -455,7 +521,7 @@ if __name__ == '__main__':
                 self.xd = 0
 
             def update(self, coords):
-                if self.rect.collidepoint(coords) and self.xd == 0 and not(ans[f'{self.a}{self.b}']):
+                if self.rect.collidepoint(coords) and self.xd == 0 and not (ans[f'{self.a}{self.b}']):
                     global count_quests
                     global min_ans
                     app = QApplication(sys.argv)
@@ -777,7 +843,7 @@ if __name__ == '__main__':
             screen.blit(fon, (0, 0))
             global count_quests
             global min_ans
-            intro_text = [f"   {count_quests}           {min_ans}            40"]
+            intro_text = [f"   {count_quests}           {min_ans}            10"]
             Right(90, 110, 10)
             Next(80, 720, 10)
             Min_ans(80, 400, 10)
@@ -796,7 +862,7 @@ if __name__ == '__main__':
                 hero.movement()
                 player = hero.next()
                 if player == 1:
-                    evil_move = 1
+                    evil_move = 0
                     evil.go()
             else:
                 evil.movement()
@@ -820,7 +886,10 @@ if __name__ == '__main__':
             if hero.catched() or evil.catched():
                 min_win()
             if hero.win():
-                hero_win()
+                if count_quests < 10:
+                    no_win()
+                else:
+                    hero_win()
             clock.tick(fps)
             pygame.display.flip()
         terminate()
