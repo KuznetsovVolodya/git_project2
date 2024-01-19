@@ -34,6 +34,7 @@ if __name__ == '__main__':
         all_sprites_0 = pygame.sprite.Group()
         all_sprites_0_1 = pygame.sprite.Group()
         sprite = pygame.sprite.Sprite()
+        all_sprites = pygame.sprite.Group()
 
         class Play(pygame.sprite.Sprite):
             image = load_image("play.png")
@@ -135,6 +136,8 @@ if __name__ == '__main__':
                 self.rect = self.image.get_rect()
                 self.rect.x = left
                 self.rect.y = top
+
+
 
         intro_text = ["", "        МИНОТАВР ПОБЕДИЛ", ""]
 
@@ -296,15 +299,16 @@ if __name__ == '__main__':
                 return list(map(lambda x: x.ljust(11, '#'), level_map))
 
         class Questt(QWidget):
-            def __init__(self, db='questions.db'):
+            def __init__(self, numy, db='questions.db'):
                 super().__init__()
                 self.db = db
-                self.num = randint(1, 50)
+                self.num = numy
                 con = sqlite3.connect('questions.db')
                 cur = con.cursor()
                 self.res = cur.execute(
-                    f'''SELECT question, a, b, c, ans FROM questions WHERE id == {self.num}''').fetchall()
+                    f'''SELECT question, a, b, c, ans FROM questions WHERE id == {self.num + 1}''').fetchall()
                 self.corr = 0
+                self.incorr = 0
                 con.close()
                 self.initUI()
 
@@ -334,8 +338,10 @@ if __name__ == '__main__':
             def hello(self, ans):
                 if self.iscorrect(ans):
                     self.corr = 1
+                    self.incorr = 0
                 else:
                     self.corr = 0
+                    self.incorr = 1
                 self.close()
 
             def iscorrect(self, n=''):
@@ -350,7 +356,9 @@ if __name__ == '__main__':
 
             def __init__(self, width, height, cell_size, left, top, size_x, size_y):
                 global count_quests
+                global min_ans
                 count_quests = 0
+                min_ans = 0
                 super().__init__(all_sprites_5)
                 self.b = top + height * cell_size
                 self.a = left + width * cell_size
@@ -360,6 +368,7 @@ if __name__ == '__main__':
                     self.image = Quest.image
                 else:
                     self.image = Quest.image2
+                self.place = list(ans.keys()).index(f'{self.a}{self.b}')
                 self.x = size_x
                 self.y = size_y
                 self.image = pygame.transform.scale(self.image, (self.x, self.y))
@@ -373,11 +382,13 @@ if __name__ == '__main__':
             def update(self, coords):
                 if self.rect.collidepoint(coords) and self.xd == 0 and not(ans[f'{self.a}{self.b}']):
                     global count_quests
+                    global min_ans
                     app = QApplication(sys.argv)
-                    ex = Questt()
+                    ex = Questt(self.place)
                     ex.show()
                     app.exec()
                     count_quests += ex.corr
+                    min_ans += ex.incorr
                     ans[f'{self.a}{self.b}'] = True
                     self.image = Quest.image2
                     self.image = pygame.transform.scale(self.image, (self.x, self.y))
@@ -616,6 +627,39 @@ if __name__ == '__main__':
                     y_c += self.cell_size
                 return x_c, y_c
 
+        class Next(pygame.sprite.Sprite):
+            image = load_image("next.png")
+
+            def __init__(self, cell_size, left, top):
+                super().__init__(all_sprites_4)
+                self.image = Next.image
+                self.image = pygame.transform.scale(self.image, (cell_size, cell_size))
+                self.rect = self.image.get_rect()
+                self.rect.x = left
+                self.rect.y = top
+
+        class Right(pygame.sprite.Sprite):
+            image = load_image("right.png")
+
+            def __init__(self, cell_size, left, top):
+                super().__init__(all_sprites_4)
+                self.image = Right.image
+                self.image = pygame.transform.scale(self.image, (cell_size, cell_size))
+                self.rect = self.image.get_rect()
+                self.rect.x = left
+                self.rect.y = top
+
+        class Min_ans(pygame.sprite.Sprite):
+            image = load_image("min_speed.png")
+
+            def __init__(self, cell_size, left, top):
+                super().__init__(all_sprites_4)
+                self.image = Min_ans.image
+                self.image = pygame.transform.scale(self.image, (cell_size, cell_size))
+                self.rect = self.image.get_rect()
+                self.rect.x = left
+                self.rect.y = top
+
         all_sprites = pygame.sprite.Group()
         all_sprites_2 = pygame.sprite.Group()
         all_sprites_3 = pygame.sprite.Group()
@@ -657,7 +701,11 @@ if __name__ == '__main__':
             fon = pygame.transform.scale(load_image('floor.png'), (width, height))
             screen.blit(fon, (0, 0))
             global count_quests
-            intro_text = [f"{count_quests}                            40"]
+            global min_ans
+            intro_text = [f"   {count_quests}           {min_ans}            40"]
+            Right(90, 110, 10)
+            Next(80, 720, 10)
+            Min_ans(80, 400, 10)
             screen.blit(fon, (0, 0))
             font = pygame.font.Font(None, 120)
             text_coord = 10
@@ -690,6 +738,7 @@ if __name__ == '__main__':
             all_sprites_5.draw(screen)
             all_sprites_2.draw(screen)
             all_sprites_3.draw(screen)
+            all_sprites_4.draw(screen)
             hero.update()
             hero.update_quest()
             evil.update()
