@@ -304,7 +304,7 @@ if __name__ == '__main__':
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for elem in all_sprites_0_1:
                         if elem.update(event.pos):
-                            first_game()
+                            first_game(2)
 
             all_sprites_0.draw(screen)
             all_sprites_0_1.draw(screen)
@@ -382,7 +382,7 @@ if __name__ == '__main__':
 
 
 
-    def first_game():
+    def first_game(num=1):
         class Wall(pygame.sprite.Sprite):
             image = load_image("wall.png")
 
@@ -413,14 +413,14 @@ if __name__ == '__main__':
                 self.rect.y = top
 
         class Wall_place:
-            def __init__(self):
-                self.x_place = self.load_level_x("walls_x")
+            def __init__(self, lvlx='walls_x', lvly='walls_y'):
+                self.x_place = self.load_level_x(lvlx)
                 for i in range(len(self.x_place)):
                     for j in range(len(self.x_place[i])):
                         if self.x_place[i][j] == "#":
                             a = board.zero_coords()
                             Wall(j, i, a[2], a[0], a[1], 5, a[2] + 2)
-                self.y_place = self.load_level_y("walls_y")
+                self.y_place = self.load_level_y(lvly)
                 for i1 in range(len(self.y_place)):
                     for j1 in range(len(self.y_place[i1])):
                         if self.y_place[i1][j1] == "#":
@@ -801,98 +801,192 @@ if __name__ == '__main__':
                 self.rect.x = left
                 self.rect.y = top
 
-        all_sprites = pygame.sprite.Group()
-        all_sprites_2 = pygame.sprite.Group()
-        all_sprites_3 = pygame.sprite.Group()
-        all_sprites_4 = pygame.sprite.Group()
-        all_sprites_5 = pygame.sprite.Group()
-        sprite = pygame.sprite.Sprite()
-        board = Board()
-        board.set_view(100, 100, 80)
-        b = board.zero_coords()
-        Wall_place()
-        ans = {}
-        q = Quest_place()
-        x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
-        hero = Hero(x_coord, y_coord, size)
-        x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
-        evil = Evil(x_coord_e, y_coord_e, size_e)
-        evil_move = 0
-        running = True
-        clock = pygame.time.Clock()
-        direction = None
-        player = 0
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYDOWN:
-                    if hero.stop() and player == 0:
-                        if pygame.key.get_pressed()[pygame.K_RIGHT]:
-                            direction = "RIGHT"
-                        elif pygame.key.get_pressed()[pygame.K_LEFT]:
-                            direction = "LEFT"
-                        elif pygame.key.get_pressed()[pygame.K_UP]:
-                            direction = "UP"
-                        elif pygame.key.get_pressed()[pygame.K_DOWN]:
-                            direction = "DOWN"
-                        x_coord, y_coord = hero.get_coords()[0], hero.get_coords()[1]
-                        x_coord2, y_coord2 = board.get_cell((x_coord, y_coord), direction)
-                        hero.aim(x_coord2, y_coord2)
-            fon = pygame.transform.scale(load_image('floor.png'), (width, height))
-            screen.blit(fon, (0, 0))
-            global count_quests
-            global min_ans
-            intro_text = [f"   {count_quests}           {min_ans}            10"]
-            Right(90, 110, 10)
-            Next(80, 720, 10)
-            Min_ans(80, 400, 10)
-            screen.blit(fon, (0, 0))
-            font = pygame.font.Font(None, 120)
-            text_coord = 10
-            for line in intro_text:
-                string_rendered = font.render(line, 1, pygame.Color('red'))
-                intro_rect = string_rendered.get_rect()
-                text_coord += 10
-                intro_rect.top = text_coord
-                intro_rect.x = 120
-                text_coord += intro_rect.height
-                screen.blit(string_rendered, intro_rect)
-            if player == 0:
-                hero.movement()
-                player = hero.next()
-                if player == 1:
-                    evil_move = 0
-                    evil.go()
-            else:
-                evil.movement()
-                player = evil.next()
-                if player == 1 and evil.stop():
-                    evil.go()
-                elif player == 0 and evil.stop() and evil_move != 0:
-                    player = 1
-                    evil_move -= 1
-                    evil.go()
-
-            board.render(screen)
-            all_sprites.draw(screen)
-            all_sprites_5.draw(screen)
-            all_sprites_2.draw(screen)
-            all_sprites_3.draw(screen)
-            all_sprites_4.draw(screen)
-            hero.update()
-            hero.update_quest()
-            evil.update()
-            if hero.catched() or evil.catched():
-                min_win()
-            if hero.win():
-                if count_quests < 10:
-                    no_win()
+        global count_quests
+        global min_ans
+        if num == 1:
+            all_sprites = pygame.sprite.Group()
+            all_sprites_2 = pygame.sprite.Group()
+            all_sprites_3 = pygame.sprite.Group()
+            all_sprites_4 = pygame.sprite.Group()
+            all_sprites_5 = pygame.sprite.Group()
+            sprite = pygame.sprite.Sprite()
+            board = Board()
+            board.set_view(100, 100, 80)
+            b = board.zero_coords()
+            Wall_place()
+            ans = {}
+            q = Quest_place()
+            x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
+            hero = Hero(x_coord, y_coord, size)
+            x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
+            evil = Evil(x_coord_e, y_coord_e, size_e)
+            evil_move = 0
+            running = True
+            clock = pygame.time.Clock()
+            direction = None
+            player = 0
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    if event.type == pygame.KEYDOWN:
+                        if hero.stop() and player == 0:
+                            if pygame.key.get_pressed()[pygame.K_RIGHT]:
+                                direction = "RIGHT"
+                            elif pygame.key.get_pressed()[pygame.K_LEFT]:
+                                direction = "LEFT"
+                            elif pygame.key.get_pressed()[pygame.K_UP]:
+                                direction = "UP"
+                            elif pygame.key.get_pressed()[pygame.K_DOWN]:
+                                direction = "DOWN"
+                            x_coord, y_coord = hero.get_coords()[0], hero.get_coords()[1]
+                            x_coord2, y_coord2 = board.get_cell((x_coord, y_coord), direction)
+                            hero.aim(x_coord2, y_coord2)
+                fon = pygame.transform.scale(load_image('floor.png'), (width, height))
+                screen.blit(fon, (0, 0))
+                global count_quests
+                global min_ans
+                intro_text = [f"   {count_quests}           {min_ans}            10"]
+                Right(90, 110, 10)
+                Next(80, 720, 10)
+                Min_ans(80, 400, 10)
+                screen.blit(fon, (0, 0))
+                font = pygame.font.Font(None, 120)
+                text_coord = 10
+                for line in intro_text:
+                    string_rendered = font.render(line, 1, pygame.Color('red'))
+                    intro_rect = string_rendered.get_rect()
+                    text_coord += 10
+                    intro_rect.top = text_coord
+                    intro_rect.x = 120
+                    text_coord += intro_rect.height
+                    screen.blit(string_rendered, intro_rect)
+                if player == 0:
+                    hero.movement()
+                    player = hero.next()
+                    if player == 1:
+                        evil_move = 0
+                        evil.go()
                 else:
-                    hero_win()
-            clock.tick(fps)
-            pygame.display.flip()
-        terminate()
+                    evil.movement()
+                    player = evil.next()
+                    if player == 1 and evil.stop():
+                        evil.go()
+                    elif player == 0 and evil.stop() and evil_move != 0:
+                        player = 1
+                        evil_move -= 1
+                        evil.go()
+
+                board.render(screen)
+                all_sprites.draw(screen)
+                all_sprites_5.draw(screen)
+                all_sprites_2.draw(screen)
+                all_sprites_3.draw(screen)
+                all_sprites_4.draw(screen)
+                hero.update()
+                hero.update_quest()
+                evil.update()
+                if hero.catched() or evil.catched():
+                    min_win()
+                if hero.win():
+                    if count_quests < 10:
+                        no_win()
+                    else:
+                        hero_win()
+                clock.tick(fps)
+                pygame.display.flip()
+            terminate()
+        else:
+            all_sprites = pygame.sprite.Group()
+            all_sprites_2 = pygame.sprite.Group()
+            all_sprites_3 = pygame.sprite.Group()
+            all_sprites_4 = pygame.sprite.Group()
+            all_sprites_5 = pygame.sprite.Group()
+            sprite = pygame.sprite.Sprite()
+            board = Board()
+            board.set_view(100, 100, 80)
+            b = board.zero_coords()
+            Wall_place('walls_x2', 'walls_y2')
+            ans = {}
+            q = Quest_place()
+            x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
+            hero = Hero(x_coord, y_coord, size)
+            x_coord_e, y_coord_e, size_e = b[0] + (b[2] * (b[3] - 1)) + 20, b[1] + (b[2] * (b[4] - 1)) + 15, b[2] - 35
+            evil = Evil(x_coord_e, y_coord_e, size_e)
+            evil_move = 0
+            running = True
+            clock = pygame.time.Clock()
+            direction = None
+            player = 0
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    if event.type == pygame.KEYDOWN:
+                        if hero.stop() and player == 0:
+                            if pygame.key.get_pressed()[pygame.K_RIGHT]:
+                                direction = "RIGHT"
+                            elif pygame.key.get_pressed()[pygame.K_LEFT]:
+                                direction = "LEFT"
+                            elif pygame.key.get_pressed()[pygame.K_UP]:
+                                direction = "UP"
+                            elif pygame.key.get_pressed()[pygame.K_DOWN]:
+                                direction = "DOWN"
+                            x_coord, y_coord = hero.get_coords()[0], hero.get_coords()[1]
+                            x_coord2, y_coord2 = board.get_cell((x_coord, y_coord), direction)
+                            hero.aim(x_coord2, y_coord2)
+                fon = pygame.transform.scale(load_image('floor.png'), (width, height))
+                screen.blit(fon, (0, 0))
+                intro_text = [f"   {count_quests}           {min_ans}            40"]
+                Right(90, 110, 10)
+                Next(80, 720, 10)
+                Min_ans(80, 400, 10)
+                screen.blit(fon, (0, 0))
+                font = pygame.font.Font(None, 120)
+                text_coord = 10
+                for line in intro_text:
+                    string_rendered = font.render(line, 1, pygame.Color('red'))
+                    intro_rect = string_rendered.get_rect()
+                    text_coord += 10
+                    intro_rect.top = text_coord
+                    intro_rect.x = 120
+                    text_coord += intro_rect.height
+                    screen.blit(string_rendered, intro_rect)
+                if player == 0:
+                    hero.movement()
+                    player = hero.next()
+                    if player == 1:
+                        evil_move = 0
+                        evil.go()
+                else:
+                    evil.movement()
+                    player = evil.next()
+                    if player == 1 and evil.stop():
+                        evil.go()
+                    elif player == 0 and evil.stop() and evil_move != 0:
+                        player = 1
+                        evil_move -= 1
+                        evil.go()
+
+                board.render(screen)
+                all_sprites.draw(screen)
+                all_sprites_5.draw(screen)
+                all_sprites_2.draw(screen)
+                all_sprites_3.draw(screen)
+                all_sprites_4.draw(screen)
+                hero.update()
+                hero.update_quest()
+                evil.update()
+                if hero.catched() or evil.catched():
+                    min_win()
+                if hero.win():
+                    if count_quests < 40:
+                        no_win()
+                    else:
+                        hero_win()
+                clock.tick(fps)
+                pygame.display.flip()
+            terminate()
 
 
     hello()
