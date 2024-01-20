@@ -1,6 +1,6 @@
 import pygame
 import os
-from random import choice, shuffle, randint
+from random import choice, shuffle
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 from PyQt5.QtWidgets import QLineEdit, QDesktopWidget, QLabel, QLayout
@@ -25,36 +25,90 @@ if __name__ == '__main__':
         return image
 
 
+    def load_level_y(filename):
+        filename = "data/" + filename
+        with open(filename, 'r') as mapFile:
+            level_map = [line.strip() for line in mapFile]
+        return list(map(lambda x: x.ljust(10, '.'), level_map))
+
+
+    def load_level_x(filename):
+        filename = "data/" + filename
+        with open(filename, 'r') as mapFile:
+            level_map = [line.strip() for line in mapFile]
+        return list(map(lambda x: x.ljust(11, '#'), level_map))
+
     def terminate():
         pygame.quit()
         sys.exit()
 
+    class Play(pygame.sprite.Sprite):
+        image = load_image("play.png")
 
-    def rules():
+        def __init__(self, left, top, size_x, size_y, group):
+            super().__init__(group)
+            self.image = Play.image
+            self.image = pygame.transform.scale(self.image, (size_x, size_y))
+            self.rect = self.image.get_rect()
+            self.size_x = size_x
+            self.size_y = size_y
+            self.rect.x = left
+            self.rect.y = top
 
-        all_sprites_1 = pygame.sprite.Group()
-        all_sprites_1_1 = pygame.sprite.Group()
-        sprite = pygame.sprite.Sprite()
+        def update(self, pos):
+            if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
+                    self.rect.y <= pos[1] <= self.rect.y + self.size_y:
+                return True
+            return False
 
-        class Play(pygame.sprite.Sprite):
-            image = load_image("play.png")
 
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_1_1)
-                self.image = Play.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.size_x = size_x
-                self.size_y = size_y
-                self.rect.x = left
-                self.rect.y = top
+    class Phone_image(pygame.sprite.Sprite):
+        image = load_image("min_phone.png")
 
-            def update(self, pos):
-                if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
-                        self.rect.y <= pos[1] <= self.rect.y + self.size_y:
-                    return True
+        def __init__(self, left, top, size_x, size_y, group):
+            super().__init__(group)
+            self.image = Phone_image.image
+            self.image = pygame.transform.scale(self.image, (size_x, size_y))
+            self.rect = self.image.get_rect()
+            self.rect.x = left
+            self.rect.y = top
+
+
+    class Wall(pygame.sprite.Sprite):
+        image = load_image("wall.png")
+
+        def __init__(self, width, height, cell_size, left, top, size_x, size_y, group):
+            super().__init__(group)
+            self.image = Wall.image
+            self.image = pygame.transform.scale(self.image, (size_x, size_y))
+            self.rect = self.image.get_rect()
+            self.rect.x = left + width * cell_size - 1
+            self.rect.y = top + height * cell_size - 1
+            self.mask = pygame.mask.from_surface(self.image)
+
+        def update(self, coords):
+            if self.rect.collidepoint(coords):
+                return True
+            else:
                 return False
 
+    class Wall_place:
+        def __init__(self, group,  boardy, lvlx='walls_x', lvly='walls_y'):
+            self.x_place = load_level_x(lvlx)
+            for i in range(len(self.x_place)):
+                for j in range(len(self.x_place[i])):
+                    if self.x_place[i][j] == "#":
+                        a = boardy.zero_coords()
+                        Wall(j, i, a[2], a[0], a[1], 5, a[2] + 2, group)
+            self.y_place = load_level_y(lvly)
+            for i1 in range(len(self.y_place)):
+                for j1 in range(len(self.y_place[i1])):
+                    if self.y_place[i1][j1] == "#":
+                        a1 = boardy.zero_coords()
+                        Wall(j1, i1, a1[2], a1[0], a1[1], a1[2] + 2, 5, group)
+
+    def rules():
+        all_sprites_1_1 = pygame.sprite.Group()
         intro_text = ["                                       ПРАВИЛА", "",
                       " Перед вами игра 'ЛАБИРИНТ МИНОТАВРА. Ваша цель - ", "",
                       " пройти через лабиринт к выходу, не столкнувшись", "",
@@ -79,7 +133,7 @@ if __name__ == '__main__':
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 30)
         text_coord = 130
-        min_im = Play(700, 900, 300, 100)
+        Play(700, 900, 300, 100, all_sprites_1_1)
         for line in intro_text:
             string_rendered = font.render(line, 5, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
@@ -96,60 +150,23 @@ if __name__ == '__main__':
                     for elem in all_sprites_1_1:
                         if elem.update(event.pos):
                             first_game()
-
-            all_sprites_1.draw(screen)
             all_sprites_1_1.draw(screen)
             pygame.display.flip()
-            # clock.tick(FPS)
 
 
     def hello():
         all_sprites_0 = pygame.sprite.Group()
         all_sprites_0_1 = pygame.sprite.Group()
-        sprite = pygame.sprite.Sprite()
-        all_sprites = pygame.sprite.Group()
-
-        class Play(pygame.sprite.Sprite):
-            image = load_image("rules_but.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0_1)
-                self.image = Play.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.size_x = size_x
-                self.size_y = size_y
-                self.rect.x = left
-                self.rect.y = top
-
-            def update(self, pos):
-                if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
-                        self.rect.y <= pos[1] <= self.rect.y + self.size_y:
-                    return True
-                return False
-
-        class Phone_image(pygame.sprite.Sprite):
-            image = load_image("min_phone.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0)
-                self.image = Phone_image.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.rect.x = left
-                self.rect.y = top
-
         intro_text = ["'become a legend' представляет", "",
                       "      ЛАБИРИНТ МИНОТАВРА", "",
                       "         Компьютерная игра",
                       "по мотивам знаменитого мифа"]
-
         fon = pygame.transform.scale(load_image('phone.png'), (width, height))
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 50)
         text_coord = 50
-        min_im = Phone_image(100, 400, 800, 500)
-        min_im = Play(700, 900, 300, 100)
+        Phone_image(100, 400, 800, 500, all_sprites_0)
+        Play(700, 900, 300, 100, all_sprites_0_1)
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('orange'))
             intro_rect = string_rendered.get_rect()
@@ -171,45 +188,12 @@ if __name__ == '__main__':
                 all_sprites_0.draw(screen)
                 all_sprites_0_1.draw(screen)
             pygame.display.flip()
-            # clock.tick(FPS)
 
 
     def min_win():
         all_sprites_0 = pygame.sprite.Group()
         all_sprites_0_1 = pygame.sprite.Group()
-        sprite = pygame.sprite.Sprite()
         FPS = 5
-
-        class Play(pygame.sprite.Sprite):
-            image = load_image("play.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0_1)
-                self.image = Play.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.size_x = size_x
-                self.size_y = size_y
-                self.rect.x = left
-                self.rect.y = top
-
-            def update(self, pos):
-                if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
-                        self.rect.y <= pos[1] <= self.rect.y + self.size_y:
-                    return True
-                return False
-
-        class Phone_image(pygame.sprite.Sprite):
-            image = load_image("min_win.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0)
-                self.image = Phone_image.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.rect.x = left
-                self.rect.y = top
-
         intro_text = ["", "                                  МИНОТАВР ПОБЕДИЛ", "",
                       "        Готовы взять реванш? Тогда пройдите этот уровень ещё раз!"]
 
@@ -217,8 +201,8 @@ if __name__ == '__main__':
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 35)
         text_coord = 50
-        min_im = Phone_image(100, 200, 800, 700)
-        min_im = Play(700, 900, 300, 100)
+        Phone_image(100, 200, 800, 700, all_sprites_0)
+        Play(700, 900, 300, 100, all_sprites_0_1)
         clock = pygame.time.Clock()
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('grey'))
@@ -246,38 +230,7 @@ if __name__ == '__main__':
     def hero_win():
         all_sprites_0 = pygame.sprite.Group()
         all_sprites_0_1 = pygame.sprite.Group()
-        sprite = pygame.sprite.Sprite()
         FPS = 5
-
-        class Play(pygame.sprite.Sprite):
-            image = load_image("play.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0_1)
-                self.image = Play.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.size_x = size_x
-                self.size_y = size_y
-                self.rect.x = left
-                self.rect.y = top
-
-            def update(self, pos):
-                if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
-                        self.rect.y <= pos[1] <= self.rect.y + self.size_y:
-                    return True
-                return False
-
-        class Phone_image(pygame.sprite.Sprite):
-            image = load_image("hero_win.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0)
-                self.image = Phone_image.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.rect.x = left
-                self.rect.y = top
 
         intro_text = ["                                              ВЫ ПОБЕДИЛИ", "",
                       "        Готовы поднять ставки? Тогда пройдите следующий уровень!"]
@@ -286,8 +239,8 @@ if __name__ == '__main__':
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 35)
         text_coord = 50
-        min_im = Phone_image(100, 200, 800, 700)
-        min_im = Play(700, 900, 300, 100)
+        Phone_image(100, 200, 800, 700, all_sprites_0)
+        Play(700, 900, 300, 100, all_sprites_0_1)
         clock = pygame.time.Clock()
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('green'))
@@ -311,41 +264,11 @@ if __name__ == '__main__':
             clock.tick(FPS)
             pygame.display.flip()
 
+
     def no_win():
         all_sprites_0 = pygame.sprite.Group()
         all_sprites_0_1 = pygame.sprite.Group()
-        sprite = pygame.sprite.Sprite()
         FPS = 5
-
-        class Play(pygame.sprite.Sprite):
-            image = load_image("play.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0_1)
-                self.image = Play.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.size_x = size_x
-                self.size_y = size_y
-                self.rect.x = left
-                self.rect.y = top
-
-            def update(self, pos):
-                if self.rect.x <= pos[0] <= self.rect.x + self.size_x and \
-                        self.rect.y <= pos[1] <= self.rect.y + self.size_y:
-                    return True
-                return False
-
-        class Phone_image(pygame.sprite.Sprite):
-            image = load_image("less_win.png")
-
-            def __init__(self, left, top, size_x, size_y):
-                super().__init__(all_sprites_0)
-                self.image = Phone_image.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.rect.x = left
-                self.rect.y = top
 
         intro_text = ["        БАЛЛОВ НЕДОСТАТОЧНО, ЧТОБЫ ПРОЙТИ НА СЛЕДУЮЩИЙ УРОВЕНЬ", "",
                       "                                  Увы, победа далась слишком дорогой ценой. ",
@@ -355,8 +278,8 @@ if __name__ == '__main__':
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 35)
         text_coord = 50
-        min_im = Phone_image(100, 200, 800, 700)
-        min_im = Play(700, 900, 300, 100)
+        Phone_image(100, 200, 800, 700, all_sprites_0)
+        Play(700, 900, 300, 100, all_sprites_0_1)
         clock = pygame.time.Clock()
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('black'))
@@ -381,64 +304,7 @@ if __name__ == '__main__':
             pygame.display.flip()
 
 
-
     def first_game(num=1):
-        class Wall(pygame.sprite.Sprite):
-            image = load_image("wall.png")
-
-            def __init__(self, width, height, cell_size, left, top, size_x, size_y):
-                super().__init__(all_sprites)
-                self.image = Wall.image
-                self.image = pygame.transform.scale(self.image, (size_x, size_y))
-                self.rect = self.image.get_rect()
-                self.rect.x = left + width * cell_size - 1
-                self.rect.y = top + height * cell_size - 1
-                self.mask = pygame.mask.from_surface(self.image)
-
-            def update(self, coords):
-                if self.rect.collidepoint(coords):
-                    return True
-                else:
-                    return False
-
-        class Floor(pygame.sprite.Sprite):
-            image = load_image("floor.png")
-
-            def __init__(self, width, height, cell_size, left, top):
-                super().__init__(all_sprites_4)
-                self.image = Floor.image
-                self.image = pygame.transform.scale(self.image, (width * cell_size, height * cell_size))
-                self.rect = self.image.get_rect()
-                self.rect.x = left
-                self.rect.y = top
-
-        class Wall_place:
-            def __init__(self, lvlx='walls_x', lvly='walls_y'):
-                self.x_place = self.load_level_x(lvlx)
-                for i in range(len(self.x_place)):
-                    for j in range(len(self.x_place[i])):
-                        if self.x_place[i][j] == "#":
-                            a = board.zero_coords()
-                            Wall(j, i, a[2], a[0], a[1], 5, a[2] + 2)
-                self.y_place = self.load_level_y(lvly)
-                for i1 in range(len(self.y_place)):
-                    for j1 in range(len(self.y_place[i1])):
-                        if self.y_place[i1][j1] == "#":
-                            a1 = board.zero_coords()
-                            Wall(j1, i1, a1[2], a1[0], a1[1], a1[2] + 2, 5)
-
-            def load_level_y(self, filename):
-                filename = "data/" + filename
-                with open(filename, 'r') as mapFile:
-                    level_map = [line.strip() for line in mapFile]
-                return list(map(lambda x: x.ljust(10, '.'), level_map))
-
-            def load_level_x(self, filename):
-                filename = "data/" + filename
-                with open(filename, 'r') as mapFile:
-                    level_map = [line.strip() for line in mapFile]
-                return list(map(lambda x: x.ljust(11, '#'), level_map))
-
         class Questt(QWidget):
             def __init__(self, numy, db='questions.db'):
                 super().__init__()
@@ -813,7 +679,7 @@ if __name__ == '__main__':
             board = Board()
             board.set_view(100, 100, 80)
             b = board.zero_coords()
-            Wall_place()
+            Wall_place(all_sprites, board)
             ans = {}
             q = Quest_place()
             x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
@@ -865,7 +731,7 @@ if __name__ == '__main__':
                     hero.movement()
                     player = hero.next()
                     if player == 1:
-                        evil_move = 0
+                        evil_move = 1
                         evil.go()
                 else:
                     evil.movement()
@@ -906,7 +772,7 @@ if __name__ == '__main__':
             board = Board()
             board.set_view(100, 100, 80)
             b = board.zero_coords()
-            Wall_place('walls_x2', 'walls_y2')
+            Wall_place(all_sprites, board, 'walls_x2', 'walls_y2')
             ans = {}
             q = Quest_place()
             x_coord, y_coord, size = b[0] + 20, b[1] + 15, b[2] - 35
@@ -956,7 +822,7 @@ if __name__ == '__main__':
                     hero.movement()
                     player = hero.next()
                     if player == 1:
-                        evil_move = 0
+                        evil_move = 1
                         evil.go()
                 else:
                     evil.movement()
