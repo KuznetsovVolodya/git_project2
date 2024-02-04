@@ -71,7 +71,7 @@ if __name__ == '__main__':
     fon = pygame.transform.scale(load_image('fin_win_phone.png'), (width, height))
     circle_be = True
 
-    Play('sign.png', 200, 300, 800, 600, all_sprites_0_1)
+    Play('sign.png', 300, 200, 550, 800, all_sprites_0_1)
     x_pos = 300
     y_pos = 200
     arg = 1
