@@ -5,3 +5,4 @@
 <pre><code>pip install -r requirements.txt</code></pre>
 3. Запустить файл main.py:
 <pre><code>python main.py</code></pre>
+
